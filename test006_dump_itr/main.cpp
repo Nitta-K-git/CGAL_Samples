@@ -18,7 +18,7 @@ int main(int argc, char* argv[]){
 	for (f=mesh.faces().begin(); f!=mesh.faces().end(); ++f){
 		if (*f!=boost::graph_traits<Mesh>::null_face()){
 			Mesh::Face_index fi = *f;
-			std::cout << fi << "::"; // face index
+			std::cout << fi << "::" << (boost::uint32_t)fi << "::"; // face index
 			Mesh::Halfedge_index hi = mesh.halfedge(fi);
 			do{
 				std::cout << mesh.point(mesh.source(hi)) << ", "; // vertices index face has
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]){
 	
 	for (v=mesh.vertices().begin(); v!=mesh.vertices().end(); ++v){
 		Mesh::Vertex_index vi = *v;
-		std::cout << vi << "::" << mesh.point(vi) << "," << std::endl; // vertex index and position
+		std::cout << vi << "::" << vi() << ":" << mesh.point(vi) << "," << std::endl; // vertex index and position
 	}
 	return EXIT_SUCCESS;
 }

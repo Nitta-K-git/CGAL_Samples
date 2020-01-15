@@ -236,29 +236,7 @@ int main(int argc, char* argv[]){
 
 頂点の追加・削除
 
-
-
-
-
-
-
 ---
 
-memo
+# まとめ
 
-
-​		Qtともデフォルトで連携しているが、使い方がよく分からない(描画は自前でやっている？)
-​			QGraphicsViewにsceneを渡しているだけ
-​		試しに
-​			
-​			demoの実行
-​				一緒にビルドする仕様ではないようなので、個別にビルド(何かcmakeの設定が違ったかも)
-​				GraphicsViewをビルド。Qtのパス通せば起動できた
-​				demoフォルダでbuild作成して、CGAL_DEMOS.slnを実行
-​					Otr2_demoでのみエラー
-​						scene.hでrandom_系の定義がされてない https://www.openmesh.org/media/Documentations/OpenMesh-Doc-Latest/a02405.html
-​						保留
-​				samplesの方も同様にビルドする
-​					========== ビルド: 662 正常終了、10 失敗、0 更新不要、0 スキップ ==========
-​					エラーは26個
-​					すべてヘッダのエラー
