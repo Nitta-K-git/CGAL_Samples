@@ -1,0 +1,28 @@
+Convenience Kernels
+	Exact_predicates_inexact_constructions_kernel
+	Exact_predicates_exact_constructions_kernel
+	Exact_predicates_exact_constructions_kernel_with_sqrt
+
+	CGAL/Simple_cartesian.h のカーネルは？
+	
+Number Types
+– double, float
+– CGAL::Gmpq (rational), Core (algebraic)‏
+– CGAL::Lazy_exact_nt<ExactNT> 
+
+Kernels このカーネルは何？
+– CGAL::Cartesian<NT>
+– CGAL::Filtered_kernel<Kernel>
+– CGAL::Lazy_kernel<NT>
+
+目的
+	Polyhedron_3のオブジェクトに対して、頂点や面を自分で追加したい
+		open3dやmeshlabみたいに頂点配列と面のインデックスorポインタの配列で指定する方法は？
+		
+		別のクラスを使う必要があるらしい https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__incremental__builder__3.html
+	
+	
+		
+
+
+

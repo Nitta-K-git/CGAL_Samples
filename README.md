@@ -236,7 +236,141 @@ int main(int argc, char* argv[]){
 
 頂点の追加・削除
 
+
+
+## ブーリアン演算
+
+[表面メッシュのブーリアン演算(CGALライブラリ) - Mesh Wiki]([https://www.rccm.co.jp/icem/pukiwiki/index.php?%E8%A1%A8%E9%9D%A2%E3%83%A1%E3%83%83%E3%82%B7%E3%83%A5%E3%81%AE%E3%83%96%E3%83%BC%E3%83%AA%E3%82%A2%E3%83%B3%E6%BC%94%E7%AE%97%28CGAL%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%29](https://www.rccm.co.jp/icem/pukiwiki/index.php?表面メッシュのブーリアン演算(CGALライブラリ)))
+
+```c++
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/Nef_polyhedron_3.h> 
+#include <fstream>
+
+typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+typedef CGAL::Nef_polyhedron_3<Kernel> Nef_polyhedron;
+
+int main() {
+  Polyhedron P1;
+  std::ifstream in1("box.off");
+  in1 >> P1;
+ 
+  Polyhedron P2;
+  std::ifstream in2("cyl.off");
+  in2 >> P2;
+ 
+  Nef_polyhedron N1(P1);
+  Nef_polyhedron N2(P2);
+ 
+  N1 -= N2;
+ 
+  Polyhedron P;
+  if(N1.is_simple()){
+    N1.convert_to_Polyhedron(P);
+    std::ofstream out("diff.off");
+    out << P;
+  }
+  else{
+    std::cerr << "N1 is not a 2-manifold." << std::endl;
+    return EXIT_FAILURE;
+  }
+  return EXIT_SUCCESS;
+}
+```
+
+## Package
+
+### deformation
+
+http://sites.fas.harvard.edu/~cs277/papers/deformation_survey.pdf
+
+
+
 ---
 
-# まとめ
+# CGALの基礎知識
 
+- [c++ - CGAL tutorial for beginners - Stack Overflow](https://stackoverflow.com/questions/17409037/cgal-tutorial-for-beginners)
+- [CGAL - the Computational Geometry Algorithms Library](https://cel.archives-ouvertes.fr/file/index/docid/340448/filename/whole-course.pdf)
+  - 基本的な概念が分かりやすく説明されている
+- [CGAL Videos](https://www.cgal.org/videos.html)
+  - [CGAL: The Open Source Computational Geometry Algorithms Library - YouTube](https://www.youtube.com/watch?v=3DLfkWWw_Tg)
+- 
+
+predicatesとconstructionsの2つの要素がある。
+
+predicatesは状態のこと。e.g. 円の中にあるかないか、orientationの向き。
+
+constructionsは作図のこと。交点を求めたり、重心を求めたり。
+
+
+
+[CGAL入門](https://sites.google.com/site/introduction2cgal/)
+
+```c++
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/convex_hull_2.h>
+#include <vector>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_2 Point_2;
+typedef std::vector<Point_2> Points;
+
+int main(){
+  Points points, result;
+  points.push_back(Point_2(0,0));
+  points.push_back(Point_2(10,0));
+  points.push_back(Point_2(10,10));
+  points.push_back(Point_2(6,5));
+  points.push_back(Point_2(4,1));
+
+  CGAL::convex_hull_2( points.begin(), points.end(), std::back_inserter(result) );
+  std::cout << result.size() << " points on the convex hull" << std::endl;
+  return 0;
+}
+```
+
+```c++
+#include <iostream>
+#include <iterator>
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/convex_hull_2.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_2 Point_2;
+
+int main(){
+  std::istream_iterator< Point_2 >  input_begin( std::cin );
+  std::istream_iterator< Point_2 >  input_end;
+  std::ostream_iterator< Point_2 >  output( std::cout, "\n" );
+  CGAL::convex_hull_2( input_begin, input_end, output );
+  return 0;
+}
+```
+
+## 構造の説明
+
+http://dosei.hatenadiary.jp/category/CGAL
+
+
+
+
+
+CGALのライブラリはconceptとmodelに分かれている
+
+# 数学の基礎知識
+
+CGALは有限体や環の概念がベースになっている。これをC++のSTLで実現している。
+
+[代数学 - [物理のかぎしっぽ]](http://hooktail.org/misc/index.php?%C2%E5%BF%F4%B3%D8)
+
+# CGAL Ipelets
+
+数学的な作図ソフトらしい
+
+[CGAL 5.0 - CGAL Ipelets: User Manual](https://doc.cgal.org/latest/CGAL_ipelets/index.html)
+
+[Ipe のインストール - さてもちブログ](http://satemochi.blog.fc2.com/blog-entry-126.html)
