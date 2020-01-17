@@ -26,6 +26,18 @@ CGAL basic samples
 
 # 環境構築
 
+## CGAL-5.0
+
+setup版をインストール https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-5.0/CGAL-5.0-Setup.exe
+
+インストーラー起動するので、ライブラリと追加で必要なライブラリにチェック入れてインストール。
+
+パスはデフォルトのC:/dev/CGAL-5.0で通した。環境変数も自動設定にした。
+
+使うだけならこれで完了。
+
+## CGAL-4.13.1
+
 今回はコンパイラにVisual Studio 2017を使用した。
 
 setup版をインストール https://github.com/CGAL/cgal/releases/download/releases%2FCGAL-4.13.1/CGAL-4.13.1-Setup.exe
@@ -66,34 +78,443 @@ vs2017でdebug,release各モードでALL_BUILDをビルドしてINSTALLをビル
 
 # 使い方
 
+## cmake
+
+- [How to use CGAL with CMake or your own build system · CGAL/cgal Wiki](https://github.com/CGAL/cgal/wiki/How-to-use-CGAL-with-CMake-or-your-own-build-system)
+
+Qtのビューワーを使う場合と使わない場合で使うコンポーネントが異なる。
+
+### Qtのビューワーを使わない場合
+
+最小限のサンプル
+
+```cmake
+cmake_minimum_required( VERSION 3.6 )
+
+project(sample_proj CXX)
+
+find_package(CGAL)
+
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    main.cpp
+)
+target_link_libraries(${PROJECT_NAME} 
+   CGAL::CGAL
+)
+```
+
+テンプレート用
+
+```cmake
+cmake_minimum_required( VERSION 3.6 )
+
+# Create Project
+get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+string(REPLACE " " "_" ProjectId ${ProjectId})
+project(${ProjectId} CXX)
+message(${ProjectId})
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+find_package(CGAL)
+
+if(NOT CMAKE_DEBUG_POSTFIX)
+  set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+
+# Add Executable
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    main.cpp
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+target_link_libraries(${PROJECT_NAME} 
+   CGAL::CGAL
+)
+```
+
+main.cppのサンプル
+
+```c++
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Surface_mesh.h>
+#include <fstream>
+
+typedef CGAL::Simple_cartesian<double>                       Kernel;
+typedef Kernel::Point_3                                      Point;
+typedef CGAL::Surface_mesh<Point>                            Mesh;
+int main(int argc, char* argv[]){
+	Mesh mesh;
+	std::ifstream in1((argc>1)?argv[1]:"data/triangle.off");
+	//	std::ifstream in1((argc>1)?argv[1]:"data/octahedron.ply"); can't read
+	
+	in1 >> mesh;
+	
+	Mesh::Face_range::iterator f;
+	Mesh::Vertex_range::iterator v;
+	
+	for (f=mesh.faces().begin(); f!=mesh.faces().end(); ++f){
+		if (*f!=boost::graph_traits<Mesh>::null_face()){
+			Mesh::Face_index fi = *f;
+			std::cout << fi << "::"; // face index
+			Mesh::Halfedge_index hi = mesh.halfedge(fi);
+			do{
+				std::cout << mesh.point(mesh.source(hi)) << ", "; // vertices index face has
+				hi=mesh.next(hi);
+			}while(hi!=mesh.halfedge(fi));
+			std::cout << std::endl;
+		}
+	}
+	
+	for (v=mesh.vertices().begin(); v!=mesh.vertices().end(); ++v){
+		Mesh::Vertex_index vi = *v;
+		std::cout << vi << "::" << mesh.point(vi) << "," << std::endl; // vertex index and position
+	}
+	return EXIT_SUCCESS;
+}
+```
+
+### Qtのビューワーを使う場合
+
+最小サンプル
+
+```cmake
+cmake_minimum_required( VERSION 3.6 )
+
+project(sample_proj CXX)
+
+find_package(CGAL REQUIRED COMPONENTS Qt5 Core)
+
+if(CGAL_FOUND AND CGAL_Qt5_FOUND)
+  add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS) #required to use basic_viewer
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and CGAL_Qt5 and will not be compiled.")
+endif()
+
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    main.cpp
+)
+
+target_link_libraries(${PROJECT_NAME} 
+  CGAL::CGAL
+  CGAL::CGAL_Qt5
+  CGAL::CGAL_Core
+)
+```
+
+テンプレート用
+
+```cmake
+cmake_minimum_required( VERSION 3.6 )
+
+# Create Project
+get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+string(REPLACE " " "_" ProjectId ${ProjectId})
+project(${ProjectId} CXX)
+message(${ProjectId})
+
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
+find_package(CGAL REQUIRED COMPONENTS Qt5 Core)
+
+if(CGAL_FOUND AND CGAL_Qt5_FOUND)
+  add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS) #required to use basic_viewer
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and CGAL_Qt5 and will not be compiled.")
+endif()
+
+if(NOT CMAKE_DEBUG_POSTFIX)
+  set(CMAKE_DEBUG_POSTFIX d)
+endif()
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CMAKE_CURRENT_SOURCE_DIR}/../bin)
+
+# Add Executable
+add_executable(${PROJECT_NAME})
+target_sources(${PROJECT_NAME}
+  PRIVATE
+    main.cpp
+)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
+
+target_link_libraries(${PROJECT_NAME} 
+  CGAL::CGAL
+  CGAL::CGAL_Qt5
+  CGAL::CGAL_Core
+)
+```
+
+main.cppのサンプル
+
+```c++
+#include <CGAL/Exact_predicates_exact_constructions_kernel_with_sqrt.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/boost/graph/helpers.h>
+#include <CGAL/draw_surface_mesh.h>
+
+#define CGAL_USE_BASIC_VIEWER 1
+typedef CGAL::Exact_predicates_exact_constructions_kernel_with_sqrt K;
+typedef K::Point_3 Point;
+typedef CGAL::Surface_mesh<Point> Mesh;
+
+int main()
+{
+  Mesh m;
+  CGAL::make_icosahedron<Mesh, Point>(m);
+  CGAL::draw(m);
+  return 0;
+}
+```
+
+
+
 ## ファイルの入出力
 
 fstreamで開いたファイルポインタをストリームでMeshオブジェクトに流し込むと読み込む(offファイルのみ対応?)
 
 参考：https://doc.cgal.org/latest/Surface_mesh/index.html#Chapter_3D_Surface_mesh
 
+より一般的な方法はpolygon soupを使う方法
+
+- [CGAL 5.0 - Polygon Mesh Processing: Polygon_mesh_processing/orient_polygon_soup_example.cpp](https://doc.cgal.org/latest/Polygon_mesh_processing/Polygon_mesh_processing_2orient_polygon_soup_example_8cpp-example.html#a2)
+  - offファイルを頂点と面で別々に読み込み、orientしてからPolyhedronに変換している。これはPLYファイルなどでも同じように使える
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/Polyhedron_items_with_id_3.h>
+#include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <CGAL/Polygon_mesh_processing/orientation.h>
+#include <CGAL/IO/OFF_reader.h>
+#include <vector>
+#include <fstream>
+#include <iostream>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel          K;
+typedef CGAL::Polyhedron_3<K, CGAL::Polyhedron_items_with_id_3>      Polyhedron;
+int main(int argc, char* argv[])
+{
+  const char* filename = (argc > 1) ? argv[1] : "data/tet-shuffled.off";
+  std::ifstream input(filename);
+  std::vector<K::Point_3> points;
+  std::vector<std::vector<std::size_t> > polygons;
+  if(!input || !CGAL::read_OFF(input, points, polygons) || points.empty())
+  {
+    std::cerr << "Cannot open file " << std::endl;
+    return EXIT_FAILURE;
+  }
+  CGAL::Polygon_mesh_processing::orient_polygon_soup(points, polygons);
+  Polyhedron mesh;
+  CGAL::Polygon_mesh_processing::polygon_soup_to_polygon_mesh(points, polygons, mesh);
+  // Number the faces because 'orient_to_bound_a_volume' needs a face <--> index map
+  int index = 0;
+  for(Polyhedron::Face_iterator fb=mesh.facets_begin(), fe=mesh.facets_end(); fb!=fe; ++fb)
+    fb->id() = index++;
+  if(CGAL::is_closed(mesh))
+    CGAL::Polygon_mesh_processing::orient_to_bound_a_volume(mesh);
+  std::ofstream out("tet-oriented1.off");
+  out << mesh;
+  out.close();
+  CGAL::Polygon_mesh_processing::reverse_face_orientations(mesh);
+  std::ofstream out2("tet-oriented2.off");	// 面の向きをすべて反転
+  out2 << mesh;
+  out2.close();
+  return EXIT_SUCCESS;
+}
+```
+
+- [CGAL 5.0 - Polygon Mesh Processing: Polygon_mesh_processing/repair_polygon_soup_example.cpp](https://doc.cgal.org/latest/Polygon_mesh_processing/Polygon_mesh_processing_2repair_polygon_soup_example_8cpp-example.html#a3)
+  - 頂点が重複していたり、使わないものがあった場合に修正してからPolyhedron作る方法
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/repair_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/orient_polygon_soup.h>
+#include <CGAL/Polygon_mesh_processing/polygon_soup_to_polygon_mesh.h>
+#include <iostream>
+#include <vector>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel     K;
+typedef K::Point_3                                              Point_3;
+typedef std::vector<std::size_t>                                Polygon;
+typedef CGAL::Surface_mesh<Point_3>                             Mesh;
+namespace PMP = CGAL::Polygon_mesh_processing;
+int main(int, char**)
+{
+  // First, construct a polygon soup with some problems
+  std::vector<Point_3> points;
+  std::vector<Polygon> polygons;
+  points.push_back(Point_3(0,0,0));
+  points.push_back(Point_3(1,0,0));
+  points.push_back(Point_3(0,1,0));
+  points.push_back(Point_3(-1,0,0));
+  points.push_back(Point_3(0,-1,0));
+  points.push_back(Point_3(0,1,0)); // duplicate point
+  points.push_back(Point_3(0,-2,0)); // unused point
+  Polygon p;
+  p.push_back(0); p.push_back(1); p.push_back(2);
+  polygons.push_back(p);
+  // degenerate face
+  p.clear();
+  p.push_back(0); p.push_back(0); p.push_back(0);
+  polygons.push_back(p);
+  p.clear();
+  p.push_back(0); p.push_back(1); p.push_back(4);
+  polygons.push_back(p);
+  // duplicate face with different orientation
+  p.clear();
+  p.push_back(0); p.push_back(4); p.push_back(1);
+  polygons.push_back(p);
+  p.clear();
+  p.push_back(0); p.push_back(3); p.push_back(5);
+  polygons.push_back(p);
+  // degenerate face
+  p.clear();
+  p.push_back(0); p.push_back(3); p.push_back(0);
+  polygons.push_back(p);
+  p.clear();
+  p.push_back(0); p.push_back(3); p.push_back(4);
+  polygons.push_back(p);
+  // pinched and degenerate face
+  p.clear();
+  p.push_back(0); p.push_back(1); p.push_back(2); p.push_back(3);
+  p.push_back(4); p.push_back(3); p.push_back(2); p.push_back(1);
+  polygons.push_back(p);
+  PMP::repair_polygon_soup(points, polygons);
+  PMP::orient_polygon_soup(points, polygons);
+  Mesh mesh;
+  PMP::polygon_soup_to_polygon_mesh(points, polygons, mesh);
+  std::cout << "Mesh has " << num_vertices(mesh) << " vertices and " << num_faces(mesh) << " faces" << std::endl;
+  assert(num_vertices(mesh) == 5);
+  assert(num_faces(mesh) == 4);
+  return 0;
+}
+```
+
+
+
 ### PLYファイルの入出力
 
-CGAL::read_PLY()で読み込めるが、頂点、面、面の色、頂点の色がすべて別々に読み込まれる。
+- [How can we SIMPLY load a ply mesh to CGAL, apply some operators and SIMPLY export another ply mesh? · Issue #3344 · CGAL/cgal](https://github.com/CGAL/cgal/issues/3344)
+- [Issue with Polyhedron and CGAL::write_PLY() function · Issue #4411 · CGAL/cgal](https://github.com/CGAL/cgal/issues/4411)
 
-面と頂点の統合は別に行う必要があるが、データの状態によって処理を分ける必要がある。
+読み込むときは、PLYの構造上、Polyhedronとしてそのまま読むことはできない(orientable meshではないため)。
 
-- 点群のみ
-- Non Manifoldのメッシュデータ
-- 三角形以外のポリゴンを含むデータ
-- 三角形のみのメッシュを持つmanifoldなデータ
+polygon soupとして読み込み→orientedなデータに変換する。
+
+PLY入力例
+
+[cgal/PLY_io_plugin.cpp at master · CGAL/cgal](https://github.com/CGAL/cgal/blob/master/Polyhedron/demo/Polyhedron/Plugins/IO/PLY_io_plugin.cpp)
+
+上のリンクのファイルがそのまま参考になる。
+
+PLYファイルは面の有無と面の頂点数が任意なので、パターン別に読み込む必要がある。
+
+面があったら最初にSMesh(mesh型)で読み込んでみる→駄目ならpolygon soupで読み込み。
+
+面が無い場合は点群として読み込み。
+
+## 
+
+PLY出力例(読み込みはOFFファイルとか)
+
+```cpp
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/IO/PLY_writer.h>
+
+#include <fstream>
+
+typedef CGAL::Simple_cartesian<double> Kernel;
+typedef Kernel::Point_3 Point_3;
+typedef CGAL::Surface_mesh<Point_3> Mesh;
+
+int main (int argc, char** argv)
+{
+  Mesh mesh;
+  std::ifstream (argv[1]) >> mesh;
+
+  std::ofstream out ("out.ply");
+  CGAL::write_PLY (out, mesh);
+  
+  return EXIT_SUCCESS;
+}
+```
 
 
 
-# データアクセス方法
+## 頂点・面の追加
 
-## 面、頂点、エッジの各要素にアクセスする方法
+- [CGAL 5.0 - 3D Polyhedral Surface: CGAL::Polyhedron_incremental_builder_3< HDS > Class Template Reference](https://doc.cgal.org/latest/Polyhedron/classCGAL_1_1Polyhedron__incremental__builder__3.html)
+- [じぇblog: Polyhedron_incremental_builder_3を使ってみる](http://geblog3.blogspot.com/2010/11/polyhedronincrementalbuilder3.html)
+
+追加をするための専用のクラス`Polyhedron_incremental_builder_3`がある。
+
+頂点数・面数・ハーフエッジ数(なしでも可)、相対インデックスの有無を指定して、頂点と面の追加をしていく。
+
+面指定は頂点のインデックスで行う。
+
+```c++
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Polyhedron_incremental_builder_3.h>
+#include <CGAL/Polyhedron_3.h>
+// A modifier creating a triangle with the incremental builder.
+template <class HDS>
+class Build_triangle : public CGAL::Modifier_base<HDS> {
+public:
+    Build_triangle() {}
+    void operator()( HDS& hds) {
+        // Postcondition: hds is a valid polyhedral surface.
+        CGAL::Polyhedron_incremental_builder_3<HDS> B( hds, true);
+        B.begin_surface( 3, 1, 6);		// 頂点、面、ハーフエッジ。openglみたいにbeginとendで挟む
+        typedef typename HDS::Vertex   Vertex;
+        typedef typename Vertex::Point Point;
+        B.add_vertex( Point( 0, 0, 0));	//頂点の追加
+        B.add_vertex( Point( 1, 0, 0));
+        B.add_vertex( Point( 0, 1, 0));
+        B.begin_facet();	//面の追加。これも面ごとにbegin-endで定義
+        B.add_vertex_to_facet( 0);	//頂点はインデックス指定
+        B.add_vertex_to_facet( 1);
+        B.add_vertex_to_facet( 2);
+        B.end_facet();
+        B.end_surface();
+    }
+};
+typedef CGAL::Simple_cartesian<double>     Kernel;
+typedef CGAL::Polyhedron_3<Kernel>         Polyhedron;
+typedef Polyhedron::HalfedgeDS             HalfedgeDS;
+int main() {
+    Polyhedron P;
+    Build_triangle<HalfedgeDS> triangle;
+    P.delegate( triangle);	// delegateでPolyhedronのデータが作成される。関数内で引数の関数呼び出し演算子が呼ばれる
+    CGAL_assertion( P.is_triangle( P.halfedges_begin()));
+    return 0;
+}
+```
+
+
+
+## データアクセス方法
+
+### 面、頂点、エッジの各要素にアクセスする方法
 
 vcglibと同じような方法で出来る。
 
 ストリーム演算子が全ての型に定義されているので、情報みたい場合は<<でストリームに流せばとりあえず何某かか表示される。
 
-## イテレータ
+### イテレータ
 
 CMakeLists.txt
 
@@ -123,8 +544,6 @@ target_link_libraries(${PROJECT_NAME}
    CGAL::CGAL
 )
 ```
-
-
 
 main.cpp
 
@@ -172,44 +591,6 @@ int main(int argc, char* argv[]){
 ## データの可視化
 
 形状の確認を一時的に行いたい場合はcmakeでCGALのQtコンポーネントを追加して、ソース内でCGAL::draw()呼ぶだけで簡易ビューワーが起動する。
-
-CMakeLists.txt
-
-```cmake
-cmake_minimum_required( VERSION 3.6 )
-
-# Create Project
-get_filename_component(ProjectId ${CMAKE_CURRENT_SOURCE_DIR} NAME)
-string(REPLACE " " "_" ProjectId ${ProjectId})
-project(${ProjectId} CXX)
-message(${ProjectId})
-
-set( CGALLIB_DIR C:/CGAL-4.13.1)
-find_package(CGAL REQUIRED COMPONENTS Qt5)
-
-if(CGAL_Qt5_FOUND)
-  add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS)
-endif()
-
-if ( CGAL_FOUND )
-  include( ${CGAL_USE_FILE} )
-else()
-    message(STATUS "This program requires the CGAL library, and will not be compiled.")
-endif()
-
-add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
-
-set(SOURCE_FILES
-   main.cpp
-)
-
-add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-
-target_link_libraries(${PROJECT_NAME} 
-   CGAL::CGAL
-   CGAL::CGAL_Qt5
-)
-```
 
 main.cpp
 
