@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.9.1, 2020-01-20T15:59:42. -->
+<!-- Written by QtCreator 4.9.1, 2020-01-23T14:34:20. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -66,18 +66,18 @@
   <valuemap type="QVariantMap">
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Imported Kit</value>
    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">Imported Kit</value>
-   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{58322c92-925e-4308-bed7-982b6652bc03}</value>
+   <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">{4a1522e4-9d64-46e6-b52b-90dab6884234}</value>
    <value type="int" key="ProjectExplorer.Target.ActiveBuildConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveDeployConfiguration">0</value>
    <value type="int" key="ProjectExplorer.Target.ActiveRunConfiguration">0</value>
    <valuemap type="QVariantMap" key="ProjectExplorer.Target.BuildConfiguration.0">
     <valuelist type="QVariantList" key="CMake.Configuration"/>
-    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/build</value>
+    <value type="QString" key="ProjectExplorer.BuildConfiguration.BuildDirectory">C:/Users/nitta/Documents/GitHub/CGAL_Samples/test014_boolian/build</value>
     <valuemap type="QVariantMap" key="ProjectExplorer.BuildConfiguration.BuildStepList.0">
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.AdditionalArguments"></value>
       <valuelist type="QVariantList" key="CMakeProjectManager.MakeStep.BuildTargets">
-       <value type="QString">test013_use_with_vcg</value>
+       <value type="QString">all</value>
       </valuelist>
       <value type="bool" key="ProjectExplorer.BuildStep.Enabled">true</value>
       <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">CMake Build</value>
@@ -180,9 +180,9 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test013_use_with_vcg</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test013_use_with_vcg
-C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test014_boolian</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test014_boolian
+C:/Users/nitta/Documents/GitHub/CGAL_Samples/test014_boolian/</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -246,9 +246,9 @@ C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test013_use_with_vcg2</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test013_use_with_vcg
-C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test014_boolian2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test014_boolian
+C:/Users/nitta/Documents/GitHub/CGAL_Samples/test014_boolian/</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -312,9 +312,9 @@ C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test013_use_with_vcg3</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test013_use_with_vcg
-C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test014_boolian3</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test014_boolian
+C:/Users/nitta/Documents/GitHub/CGAL_Samples/test014_boolian/</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>
@@ -378,9 +378,9 @@ C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test013_use_with_vcg4</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test013_use_with_vcg
-C:/Users/nitta/Documents/GitHub/CGAL_Samples/test013_use_with_vcg/</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">test014_boolian4</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">CMakeProjectManager.CMakeRunConfiguration.test014_boolian
+C:/Users/nitta/Documents/GitHub/CGAL_Samples/test014_boolian/</value>
     <value type="QString" key="RunConfiguration.Arguments"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>

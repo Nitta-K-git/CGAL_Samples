@@ -11,6 +11,8 @@ add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 find_package(CGAL)
 set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
 find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
+find_package(Ceres REQUIRED)
+include_directories(${CERES_INCLUDE_DIRS})
 
 if(CGAL_FOUND AND EIGEN3_FOUND)
   include( ${EIGEN3_USE_FILE} )
@@ -34,6 +36,9 @@ target_sources(${PROJECT_NAME}
 
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE CGAL_PMP_USE_CERES_SOLVER)
+
 target_link_libraries(${PROJECT_NAME} 
    CGAL::CGAL
+   ceres
 )

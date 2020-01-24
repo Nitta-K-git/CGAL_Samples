@@ -8,7 +8,7 @@ message(${ProjectId})
 
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
-find_package(CGAL)
+find_package(CGAL REQUIRED COMPONENTS Qt5 Core)
 set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
 find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
 
@@ -16,6 +16,12 @@ if(CGAL_FOUND AND EIGEN3_FOUND)
   include( ${EIGEN3_USE_FILE} )
 else()
   message(FATAL_ERROR "ERROR: this program requires CGAL and Eigen and will not be compiled.")
+endif()
+
+if(CGAL_FOUND AND CGAL_Qt5_FOUND)
+  add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS) #required to use basic_viewer
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and CGAL_Qt5 and will not be compiled.")
 endif()
 
 if(NOT CMAKE_DEBUG_POSTFIX)
@@ -35,5 +41,7 @@ target_sources(${PROJECT_NAME}
 set_target_properties(${PROJECT_NAME} PROPERTIES DEBUG_POSTFIX ${CMAKE_DEBUG_POSTFIX})
 
 target_link_libraries(${PROJECT_NAME} 
-   CGAL::CGAL
+  CGAL::CGAL
+  CGAL::CGAL_Qt5
+  CGAL::CGAL_Core
 )

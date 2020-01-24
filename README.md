@@ -22,8 +22,6 @@ CGAL basic samples
 
 マニュアルが充実している。アルゴリズムの解説もある https://doc.cgal.org/latest/Manual/packages.html
 
-
-
 # 環境構築
 
 ## CGAL-5.0
@@ -34,7 +32,28 @@ setup版をインストール https://github.com/CGAL/cgal/releases/download/rel
 
 パスはデフォルトのC:/dev/CGAL-5.0で通した。環境変数も自動設定にした。
 
-使うだけならこれで完了。
+### install ceres
+
+https://doc.cgal.org/latest/Manual/thirdparty.html
+
+In CGAL, Ceres is used by the [Polygon Mesh Processing Reference](https://doc.cgal.org/latest/Polygon_mesh_processing/group__PkgPolygonMeshProcessingRef.html) package for mesh smoothing, which requires solving complex non-linear least squares problems.
+
+install steps
+
+ref
+
+- [Installation — Ceres Solver](http://ceres-solver.org/installation.html)
+- https://github.com/ceres-solver/ceres-solver/issues/371
+
+1. download stable package
+2. extract downloaded file anywhere
+3. move to "ceres-solver-1.14.0"
+4. make directory "ceres-bin" and move there
+5. In command prompt, input below command
+   1. if you use visual studio : `cmake .. -G"Visual Studio 15 2017 Win64" -DEIGEN3_INCLUDE_DIR="C:/eigen-3.3.7" -DEIGEN_INCLUDE_DIR_HINTS="C:/eigen-3.3.7" -DMINIGLOG=ON -DCMAKE_CXX_FLAGS="/utf-8 /EHsc"`
+   2. other compiler(I don't do this) : `cmake .. -G"Other compiler name" -DEIGEN3_INCLUDE_DIR="C:/eigen-3.3.7" -DEIGEN_INCLUDE_DIR_HINTS="C:/eigen-3.3.7" -DMINIGLOG=ON`
+6. build by release mode `cmake --build . --config release`
+7. install liblary `cmake --build . --target install --config release` or Use Visual Studio by building INSTALL project
 
 ## CGAL-4.13.1
 
@@ -76,15 +95,13 @@ cmake-guiでconfigure,generateする。
 
 vs2017でdebug,release各モードでALL_BUILDをビルドしてINSTALLをビルドする。
 
-# 使い方
-
-## cmake
+# Using with cmake
 
 - [How to use CGAL with CMake or your own build system · CGAL/cgal Wiki](https://github.com/CGAL/cgal/wiki/How-to-use-CGAL-with-CMake-or-your-own-build-system)
 
 Qtのビューワーを使う場合と使わない場合で使うコンポーネントが異なる。
 
-### Qtのビューワーを使わない場合
+## without Qt viewer
 
 最小限のサンプル
 
@@ -94,6 +111,14 @@ cmake_minimum_required( VERSION 3.6 )
 project(sample_proj CXX)
 
 find_package(CGAL)
+set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
+find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
+
+if(CGAL_FOUND AND EIGEN3_FOUND)
+  include( ${EIGEN3_USE_FILE} )
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and Eigen and will not be compiled.")
+endif()
 
 add_executable(${PROJECT_NAME})
 target_sources(${PROJECT_NAME}
@@ -119,6 +144,14 @@ message(${ProjectId})
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 find_package(CGAL)
+set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
+find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
+
+if(CGAL_FOUND AND EIGEN3_FOUND)
+  include( ${EIGEN3_USE_FILE} )
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and Eigen and will not be compiled.")
+endif()
 
 if(NOT CMAKE_DEBUG_POSTFIX)
   set(CMAKE_DEBUG_POSTFIX d)
@@ -182,7 +215,7 @@ int main(int argc, char* argv[]){
 }
 ```
 
-### Qtのビューワーを使う場合
+## with Qt viewer
 
 最小サンプル
 
@@ -192,6 +225,14 @@ cmake_minimum_required( VERSION 3.6 )
 project(sample_proj CXX)
 
 find_package(CGAL REQUIRED COMPONENTS Qt5 Core)
+set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
+find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
+
+if(CGAL_FOUND AND EIGEN3_FOUND)
+  include( ${EIGEN3_USE_FILE} )
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and Eigen and will not be compiled.")
+endif()
 
 if(CGAL_FOUND AND CGAL_Qt5_FOUND)
   add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS) #required to use basic_viewer
@@ -226,6 +267,14 @@ message(${ProjectId})
 add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
 
 find_package(CGAL REQUIRED COMPONENTS Qt5 Core)
+set( EIGEN3_INCLUDE_DIR C:/eigen-3.3.7)
+find_package(Eigen3) # you have to find Eigen3 after find CGAL(if you find Eigen3 before CGAL, Eigen is not installed correctly)
+
+if(CGAL_FOUND AND EIGEN3_FOUND)
+  include( ${EIGEN3_USE_FILE} )
+else()
+  message(FATAL_ERROR "ERROR: this program requires CGAL and Eigen and will not be compiled.")
+endif()
 
 if(CGAL_FOUND AND CGAL_Qt5_FOUND)
   add_definitions(-DCGAL_USE_BASIC_VIEWER -DQT_NO_KEYWORDS) #required to use basic_viewer
@@ -278,7 +327,28 @@ int main()
 }
 ```
 
+## with Ceres
 
+Ceres need when use smoothing library in Polygon Mesh Processing
+
+- [Using Ceres with CMake](http://ceres-solver.org/installation.html#using-ceres-with-cmake)
+- [How to link Ceres to CGAL to use Smoothing functions? - Stack Overflow](https://stackoverflow.com/questions/58830516/how-to-link-ceres-to-cgal-to-use-smoothing-functions)
+- [勝手に作るCMake入門 その4 外部ライブラリを利用する - かみのメモ](https://kamino.hatenablog.com/entry/cmake_tutorial4#sec8_2)
+
+add below command in CMakeLists.txt
+
+```cmake
+find_package(Ceres REQUIRED)
+include_directories(${CERES_INCLUDE_DIRS})
+target_compile_definitions(${PROJECT_NAME} PRIVATE CGAL_PMP_USE_CERES_SOLVER)
+
+target_link_libraries(${PROJECT_NAME} 
+   CGAL::CGAL
+   ceres
+)
+```
+
+# Sample
 
 ## ファイルの入出力
 
@@ -617,11 +687,232 @@ int main(int argc, char* argv[]){
 
 頂点の追加・削除
 
+## Meshing
+
+### Refine and Fair a Region on a Triangle Mesh
+
+https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#MeshingExample_1
+
+refine:形状はそのままでmeshの再構成?をする。変換前後の違いはよく分からない
+
+fair:linear bi-Laplacianで形状自体を修正する
+
+### Triangulate a Polygon Mesh
+
+https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#MeshingExample_2
+
+任意の多面体を三角形の面に分割する
+
+### Isotropic Remeshing of a Region on a Polygon Mesh
+
+https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#RemeshingExample_1
+
+不均一な三角形を正三角形になるように分割する。基本的にメッシュは細かくなる
+
+## Hole filling
+
+## Predicates
+
+### Self Intersections
+
+ポリゴンが別のポリゴンにめり込んでる状態を判定する
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/self_intersections.h>
+#include <fstream>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Surface_mesh<K::Point_3>             Mesh;
+typedef boost::graph_traits<Mesh>::face_descriptor face_descriptor;
+namespace PMP = CGAL::Polygon_mesh_processing;
+int main(int argc, char* argv[])
+{
+  const char* filename = (argc > 1) ? argv[1] : "data/pig.off";
+  std::ifstream input(filename);
+  Mesh mesh;
+  if (!input || !(input >> mesh) || !CGAL::is_triangle_mesh(mesh))
+  {
+    std::cerr << "Not a valid input file." << std::endl;
+    return 1;
+  }
+  bool intersecting = PMP::does_self_intersect(mesh,
+      PMP::parameters::vertex_point_map(get(CGAL::vertex_point, mesh)));
+  std::cout
+    << (intersecting ? "There are self-intersections." : "There is no self-intersection.")
+    << std::endl;
+  std::vector<std::pair<face_descriptor, face_descriptor> > intersected_tris;
+  PMP::self_intersections(mesh, std::back_inserter(intersected_tris));
+  std::cout << intersected_tris.size() << " pairs of triangles intersect." << std::endl;
+  
+  return 0;
+}
+```
+
 
 
 ## ブーリアン演算
 
-[表面メッシュのブーリアン演算(CGALライブラリ) - Mesh Wiki]([https://www.rccm.co.jp/icem/pukiwiki/index.php?%E8%A1%A8%E9%9D%A2%E3%83%A1%E3%83%83%E3%82%B7%E3%83%A5%E3%81%AE%E3%83%96%E3%83%BC%E3%83%AA%E3%82%A2%E3%83%B3%E6%BC%94%E7%AE%97%28CGAL%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%29](https://www.rccm.co.jp/icem/pukiwiki/index.php?表面メッシュのブーリアン演算(CGALライブラリ)))
+- [CGAL 5.0 - Polygon Mesh Processing: User Manual](https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#coref_bolop_subsec)
+- [3D Boolean Operations on Nef Polyhedra](https://doc.cgal.org/latest/Manual/packages.html#PkgNef3)
+- [表面メッシュのブーリアン演算(CGALライブラリ) - Mesh Wiki](https://www.rccm.co.jp/icem/pukiwiki/index.php?%E8%A1%A8%E9%9D%A2%E3%83%A1%E3%83%83%E3%82%B7%E3%83%A5%E3%81%AE%E3%83%96%E3%83%BC%E3%83%AA%E3%82%A2%E3%83%B3%E6%BC%94%E7%AE%97%28CGAL%E3%83%A9%E3%82%A4%E3%83%96%E3%83%A9%E3%83%AA%29)
+
+Polygon_mesh_processingを使う方法とNef Polyhedraパッケージを使う方法がある。
+
+Nefの方が高機能
+
+- 演算子が定義されている(+,-)
+- Manifoldでないデータも扱えるらしい(辺が共有されてるパターン)。
+
+### Polygon Mesh Processing : Union
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/corefinement.h>
+#include <fstream>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Surface_mesh<K::Point_3>             Mesh;
+namespace PMP = CGAL::Polygon_mesh_processing;
+int main(int argc, char* argv[])
+{
+  const char* filename1 = (argc > 1) ? argv[1] : "data/blobby.off";
+  const char* filename2 = (argc > 2) ? argv[2] : "data/eight.off";
+  std::ifstream input(filename1);
+  Mesh mesh1, mesh2;
+  if (!input || !(input >> mesh1))
+  {
+    std::cerr << "First mesh is not a valid off file." << std::endl;
+    return 1;
+  }
+  input.close();
+  input.open(filename2);
+  if (!input || !(input >> mesh2))
+  {
+    std::cerr << "Second mesh is not a valid off file." << std::endl;
+    return 1;
+  }
+  Mesh out;
+  bool valid_union = PMP::corefine_and_compute_union(mesh1,mesh2, out);
+  if (valid_union)
+  {
+    std::cout << "Union was successfully computed\n";
+    std::ofstream output("union.off");
+    output << out;
+    return 0;
+  }
+  std::cout << "Union could not be computed\n";
+  return 1;
+}
+```
+
+### Polygon Mesh Processing : Difference and Remeshing
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/corefinement.h>
+
+#include <CGAL/Polygon_mesh_processing/remesh.h>
+#include <CGAL/boost/graph/selection.h>
+#include <fstream>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef CGAL::Surface_mesh<K::Point_3>             Mesh;
+typedef boost::graph_traits<Mesh>::edge_descriptor edge_descriptor;
+typedef boost::graph_traits<Mesh>::face_descriptor face_descriptor;
+typedef boost::graph_traits<Mesh>::halfedge_descriptor halfedge_descriptor;
+namespace PMP = CGAL::Polygon_mesh_processing;
+namespace params = PMP::parameters;
+struct Vector_pmap_wrapper{
+  std::vector<bool>& vect;
+  Vector_pmap_wrapper(std::vector<bool>& v) : vect(v) {}
+  friend bool get(const Vector_pmap_wrapper& m, face_descriptor f)
+  {
+    return m.vect[f];
+  }
+  friend void put(const Vector_pmap_wrapper& m, face_descriptor f, bool b)
+  {
+    m.vect[f]=b;
+  }
+};
+int main(int argc, char* argv[])
+{
+  const char* filename1 = (argc > 1) ? argv[1] : "data/blobby.off";
+  const char* filename2 = (argc > 2) ? argv[2] : "data/eight.off";
+  std::ifstream input(filename1);
+  Mesh mesh1, mesh2;
+  if (!input || !(input >> mesh1))
+  {
+    std::cerr << "First mesh is not a valid off file." << std::endl;
+    return 1;
+  }
+  input.close();
+  input.open(filename2);
+  if (!input || !(input >> mesh2))
+  {
+    std::cerr << "Second mesh is not a valid off file." << std::endl;
+    return 1;
+  }
+  //create a property on edges to indicate whether they are constrained
+  Mesh::Property_map<edge_descriptor,bool> is_constrained_map = mesh1.add_property_map<edge_descriptor,bool>("e:is_constrained", false).first;
+  // update mesh1 to contain the mesh bounding the difference of the two input volumes.
+  bool valid_difference =
+    PMP::corefine_and_compute_difference(mesh1,
+                                         mesh2,
+                                         mesh1,
+                                         params::all_default(), // default parameters for mesh1
+                                         params::all_default(), // default parameters for mesh2
+                                         params::edge_is_constrained_map(is_constrained_map));
+  if (valid_difference)
+  {
+    std::cout << "Difference was successfully computed\n";
+    std::ofstream output("difference.off");
+    output << mesh1;
+  }
+  else{
+    std::cout << "Difference could not be computed\n";
+    return 1;
+  }
+  
+  // collect faces incident to a constrained edge
+  std::vector<face_descriptor> selected_faces;
+  std::vector<bool> is_selected(num_faces(mesh1), false);
+  for(edge_descriptor e : edges(mesh1))
+    if (is_constrained_map[e])
+    {
+      // insert all faces incident to the target vertex
+      for(halfedge_descriptor h :
+                    halfedges_around_target(halfedge(e,mesh1),mesh1))
+      {
+        if (!is_border(h, mesh1) )
+        {
+          face_descriptor f=face(h, mesh1);
+          if ( !is_selected[f] )
+          {
+            selected_faces.push_back(f);
+            is_selected[f]=true;
+          }
+        }
+      }
+    }
+  // increase the face selection
+  CGAL::expand_face_selection(selected_faces, mesh1, 2,
+    Vector_pmap_wrapper(is_selected), std::back_inserter(selected_faces));
+  std::cout << selected_faces.size()
+            << " faces were selected for the remeshing step\n";
+  // remesh the region around the intersection polylines
+  PMP::isotropic_remeshing(
+    selected_faces,
+    0.02,
+    mesh1,
+    params::edge_is_constrained_map(is_constrained_map) );
+  std::ofstream output("difference_remeshed.off");
+  output << mesh1;
+  return 0;
+}
+```
+
+### Nef Polyhedra : Difference
 
 ```c++
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
@@ -661,6 +952,142 @@ int main() {
   return EXIT_SUCCESS;
 }
 ```
+
+## 体積の計算
+
+- [CGAL 5.0 - Polygon Mesh Processing: Geometric Measure Functions](https://doc.cgal.org/latest/Polygon_mesh_processing/group__measure__grp.html#ga85cebf8fbc7cb8930fd16aeee2878c7e)
+- [How to calculate volume of a polyhedron/mesh? · Issue #2620 · CGAL/cgal](https://github.com/CGAL/cgal/issues/2620)
+
+```cpp
+#include <CGAL/Exact_predicates_exact_constructions_kernel.h>
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <CGAL/Polygon_mesh_processing/measure.h>
+#include <fstream>
+ 
+typedef CGAL::Exact_predicates_exact_constructions_kernel Kernel;
+typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+ 
+int main(int argc, char* argv[]){
+  if(argc < 2){
+    std::cout << "usage: filename1" << std::endl;
+    return EXIT_FAILURE;
+  }
+  Polyhedron P1;
+  std::ifstream in1(argv[1]);
+  in1 >> P1;
+ 
+  std::cout << "P1: volume:" << CGAL::Polygon_mesh_processing::volume(P1) << std::endl;
+  return EXIT_SUCCESS;
+}
+```
+
+## Hausdorff距離
+
+- [CGAL 5.0 - Polygon Mesh Processing: Distance Functions](https://doc.cgal.org/latest/Polygon_mesh_processing/group__PMP__distance__grp.html#ga2b28867dc150931b2f12d17b77d15266)
+- [CGAL 5.0 - Polygon Mesh Processing: Polygon_mesh_processing/hausdorff_distance_remeshing_example.cpp](https://doc.cgal.org/latest/Polygon_mesh_processing/Polygon_mesh_processing_2hausdorff_distance_remeshing_example_8cpp-example.html#a4)
+
+tm1のサンプリング頂点数を決めて、tm2の各頂点との距離を計算する。
+
+tm2でもサンプリング頂点数を決めることが可能。
+
+ただし、vcglibとは異なり最大距離しか計算できない。
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/distance.h>
+#include <CGAL/Polygon_mesh_processing/remesh.h>
+#if defined(CGAL_LINKED_WITH_TBB) // if you installed and linked TBB, you can use parallel calculation
+#define TAG CGAL::Parallel_tag
+#else
+#define TAG CGAL::Sequential_tag // default
+#endif
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3                     Point;
+typedef CGAL::Surface_mesh<K::Point_3> Mesh;
+namespace PMP = CGAL::Polygon_mesh_processing;
+int main()
+{
+  Mesh tm1, tm2;
+  CGAL::make_tetrahedron(Point(.0,.0,.0),
+                         Point(2,.0,.0),
+                         Point(1,1,1),
+                         Point(1,.0,2),
+                         tm1);
+  tm2=tm1;
+  CGAL::Polygon_mesh_processing::isotropic_remeshing(tm2.faces(),.05, tm2);
+  std::cout << "Approximated Hausdorff distance: "
+            << CGAL::Polygon_mesh_processing::approximate_Hausdorff_distance
+                  <TAG>(tm1, tm2, PMP::parameters::number_of_points_per_area_unit(4000))
+            << std::endl;
+}
+```
+
+Polyhedronのデータ形式でも計算可能
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <CGAL/Polygon_mesh_processing/distance.h>
+
+#include <CGAL/Polyhedron_3.h>
+#include <CGAL/IO/Polyhedron_iostream.h>
+#include <fstream>
+
+#if defined(CGAL_LINKED_WITH_TBB) // if you installed and linked TBB, you can use parallel calculation
+#define TAG CGAL::Parallel_tag
+#else
+#define TAG CGAL::Sequential_tag // default
+#endif
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+typedef K::Point_3                     Point;
+typedef CGAL::Surface_mesh<K::Point_3> Mesh;
+typedef CGAL::Polyhedron_3<K> Polyhedron;
+namespace PMP = CGAL::Polygon_mesh_processing;
+int main(int argc, char* argv[])
+{
+  Polyhedron P1, P2;
+
+  if(argc < 3){
+    std::cout << "usage: filename1 filename2" << std::endl;
+    return EXIT_FAILURE;
+  }
+  std::ifstream in1(argv[1]);
+  in1 >> P1;
+  std::ifstream in2(argv[2]);
+  in2 >> P2;
+
+  std::cout << "Approximated Hausdorff distance: "
+            << CGAL::Polygon_mesh_processing::approximate_Hausdorff_distance
+                  <TAG>(P1, P2, PMP::parameters::number_of_points_per_area_unit(4000))
+            << std::endl;
+}
+```
+
+
+
+## CGAL with OpenMesh
+
+OpenMeshのデータは割と簡単に連携できるらしい
+
+- [CGAL 5.0 - Triangulated Surface Mesh Simplification: Surface_mesh_simplification/edge_collapse_OpenMesh.cpp](https://doc.cgal.org/latest/Surface_mesh_simplification/Surface_mesh_simplification_2edge_collapse_OpenMesh_8cpp-example.html)
+
+## その他の計算 Polygon Mesh Processing
+
+[CGAL 5.0 - Polygon Mesh Processing: User Manual](https://doc.cgal.org/latest/Polygon_mesh_processing/index.html)
+
+- Boolean operation
+- Clipping
+- Intersections Detection
+- Hole filling
+- Remeshing
+- Smoothing
+- Polygon soup
+- Slicer
+- Hausdorff distance
+
+
 
 ## Package
 
