@@ -2,6 +2,8 @@
 
 # 概要
 
+## official
+
 CGAL basic samples
 
 公式サイト
@@ -21,6 +23,14 @@ CGAL basic samples
 - GPLは商用ライセンスで購入して使う方法もあるらしい
 
 マニュアルが充実している。アルゴリズムの解説もある https://doc.cgal.org/latest/Manual/packages.html
+
+## Python tool
+
+open3dのようにpythonで幾何学データ処理を行うためのツールとして提供されている。
+
+ベースにCGALのライブラリを使用している。
+
+現状ではまだまだ開発途中の模様。
 
 # 環境構築
 
@@ -687,6 +697,18 @@ int main(int argc, char* argv[]){
 
 頂点の追加・削除
 
+## Edge Collapse
+
+[CGAL 5.0.1 - Triangulated Surface Mesh Simplification: User Manual](https://doc.cgal.org/latest/Surface_mesh_simplification/index.html)
+
+エッジを1本消して両端点を統合することによりエッジに接触している面を消去できる。
+
+## Triangulated Surface Mesh Segmentation
+
+- [CGAL 5.0.1 - Triangulated Surface Mesh Segmentation: User Manual](https://doc.cgal.org/latest/Surface_mesh_segmentation/index.html)
+
+各ファセットに対してSDF値を計算し、クラスタリング・分割を行う。
+
 ## Meshing
 
 ### Refine and Fair a Region on a Triangle Mesh
@@ -1163,7 +1185,11 @@ int main(){
 
 http://dosei.hatenadiary.jp/category/CGAL
 
+## CGAL and Boost Property Maps
 
+- [CGAL 5.0.1 - CGAL and Boost Property Maps: User Manual](CGAL 5.0.1 - CGAL and Boost Property Maps: User Manual)
+
+CGALは頂点やfacetを操作するときにfor分でマニュアル的に対対処せずイテレータとメッシュを関数
 
 
 
