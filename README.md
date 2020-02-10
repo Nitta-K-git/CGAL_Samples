@@ -1111,7 +1111,22 @@ OpenMeshのデータは割と簡単に連携できるらしい
 
 
 
-## Package
+## Triangulated Surface Mesh Deformation
+
+3種類の手法が実装されている
+
+- [The *As-Rigid-As-Possible* (*ARAP*) method](https://igl.ethz.ch/projects/ARAP/arap_web.pdf)
+  - メッシュが鈍角の場合は使えない(鋭角に分割すれば使える)
+- The *Spokes and Rims* method
+  - メッシュが鈍角でも使える
+  - ARAPに比べると歪みが発生しやすい
+- The *Smoothed Rotation Enhanced As-Rigid-As-Possible* method
+
+### How to use
+
+
+
+
 
 ### deformation
 
