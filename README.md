@@ -358,6 +358,461 @@ target_link_libraries(${PROJECT_NAME}
 )
 ```
 
+## with vcglib
+
+以下を追加するだけでよい
+
+```cmake
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    C:/Users/nitta/Documents/GitLab/vcglib
+)
+```
+
+
+
+# Manual
+
+## Specializations of boost::graph_traits
+
+[CGAL 5.0.1 - CGAL and the Boost Graph Library: Specializations of boost::graph_traits](https://doc.cgal.org/latest/BGL/group__PkgBGLTraits.html)
+
+- vertex_descriptorとかの一覧表
+- descriptor : pointerのようなもの
+
+e.g.
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel     Kernel;
+typedef CGAL::Surface_mesh<Kernel::Point_3>               CGALMesh;
+
+// boost使用
+typedef boost::graph_traits<CGALMesh>::vertex_descriptor   vertex_descriptor;
+typedef boost::graph_traits<CGALMesh>::vertex_iterator     vertex_iterator;
+typedef boost::graph_traits<CGALMesh>::halfedge_descriptor halfedge_descriptor;
+typedef boost::graph_traits<CGALMesh>::edge_descriptor     edge_descriptor;
+
+// boost使わない版
+typedef CGALMesh::Vertex_index        vertex_descriptor;
+typedef CGALMesh::Vertex_iterator     vertex_iterator;
+typedef CGALMesh::Halfedge_index      halfedge_descriptor;
+typedef CGALMesh::Edge_index          edge_descriptor;
+```
+
+## typedef Kernel
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;の方が簡易版らしい。
+
+具体的な違いはよく分からない
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+
+#include <CGAL/Simple_cartesian.h>
+typedef CGAL::Simple_cartesian<double> K;
+```
+
+---
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polyhedron_3.h>
+
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+typedef CGAL::Polyhedron_3<Kernel> Polyhedron;
+```
+
+[CGAL 5.0.1 - 2D and 3D Linear Geometry Kernel: CGAL::Exact_predicates_inexact_constructions_kernel Class Reference](https://doc.cgal.org/latest/Kernel_23/classCGAL_1_1Exact__predicates__inexact__constructions__kernel.html)
+
+- It uses Cartesian representation.
+- It supports constructions of points from `double` Cartesian coordinates.
+- It provides exact geometric predicates, but inexact geometric constructions.
+
+内部でSimple_cartesian<double>を呼び出している。
+
+```cpp
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Surface_mesh.h>
+
+typedef CGAL::Simple_cartesian<double> Kernel;
+typedef CGAL::Surface_mesh<Kernel::Point_3> CGALMesh;
+```
+
+[CGAL 5.0.1 - 2D and 3D Linear Geometry Kernel: CGAL::Simple_cartesian< FieldNumberType > Struct Template Reference](https://doc.cgal.org/latest/Kernel_23/structCGAL_1_1Simple__cartesian.html)
+
+Simple_cartesianにはdouble以外にも[色々な拡張型](https://doc.cgal.org/latest/Algebraic_foundations/classFieldNumberType.html)が指定可能。doubleなどの組み込み型の場合は近似計算になる。
+
+
+
+## Surface Mesh
+
+Reference
+
+- [CGAL 5.0.1 - Surface Mesh: User Manual](https://doc.cgal.org/latest/Surface_mesh/index.html)
+- [CGAL 5.0.1 - Surface Mesh: CGAL::Surface_mesh< P > Class Template Reference](https://doc.cgal.org/latest/Surface_mesh/classCGAL_1_1Surface__mesh.html#aea5cd1027cca955472f6c7cb6fc6ffcb)
+
+HalfedgeDS,Polyhedron_3の代わりに使える。
+
+- MutableFaceGraphとFaceListGraphのコンセプトを持っているので、この条件を満たすライブラリで使用できる
+
+違いは
+
+- ポインタでなくインデックスベースでのアクセス
+- 要素の追加メカニズムがシンプル、コンパイル時でなく実行時に行われる
+- 要素の削除はフラグ方式であり、メモリ上から削除するためにはガベージコレクションを使う
+- empty関数の仕様なども違うため、互換性があるわけではない
+
+データ型 [CGAL 5.0.1 - CGAL and the Boost Graph Library: Specializations of boost::graph_traits](https://doc.cgal.org/latest/BGL/group__PkgBGLTraits.html)
+
+- `Surface_mesh::Vertex_index`
+- `Surface_mesh::Halfedge_index`
+- `Surface_mesh::Face_index`
+- `Surface_mesh::Edge_index`
+
+### データ入出力と要素巡回
+
+OFFファイル
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+typedef CGAL::Surface_mesh<Kernel::Point_3>                  Mesh;
+
+int main(int argc, char* argv[])
+{
+    const char* filename = (argc > 1) ? argv[1] : "in.off";
+    std::ifstream input(filename);
+    Mesh mesh;
+    if ( !input || !(input >> mesh) || mesh.is_empty() ) {
+        std::cerr << "Not a valid off file." << std::endl;
+        return 1;
+    }
+
+    std::cout << "Halfedge_index: ";
+    for(Mesh::Halfedge_index h : halfedges(mesh))
+        std::cout << h << ',';
+    std::cout << std::endl;
+
+    std::cout << "Edge_index: ";
+    for(Mesh::Edge_index e : edges(mesh))
+        std::cout << e << ',';
+    std::cout << std::endl;
+
+    std::cout << "vertex_index: ";
+    for(Mesh::Vertex_index v : vertices(mesh))
+        std::cout << v << ',';
+    std::cout << std::endl;
+
+    std::cout << "face_index: ";
+    for(Mesh::Face_index f : faces(mesh))
+        std::cout << f << ',';
+    std::cout << std::endl;
+
+    std::cout << "Halfedge_index: ";
+    for(Mesh::Halfedge_index h : halfedges(mesh))
+        std::cout << h.idx() << ',';
+    std::cout << std::endl;
+
+    std::cout << "Edge_index: ";
+    for(Mesh::Edge_index e : edges(mesh))
+        std::cout << e.idx() << ',';
+    std::cout << std::endl;
+
+    std::cout << "vertex_index: ";
+    for(Mesh::Vertex_index v : vertices(mesh))
+        std::cout << v.idx() << ',';
+    std::cout << std::endl;
+
+    std::cout << "face_index: ";
+    for(Mesh::Face_index f : faces(mesh))
+        std::cout << f.idx() << ',';
+    std::cout << std::endl;
+
+    std::ofstream out("out.off");
+    out.precision(17);
+    out << mesh << std::endl;
+    return 0;
+}
+```
+
+```
+C:\Users\nitta\Documents\GitHub\CGAL_Samples\bin>test040_surface_mesh_iter.exe .\data\tetrahedron.off
+Halfedge_index: h0,h1,h2,h3,h4,h5,h6,h7,h8,h9,h10,h11,
+Edge_index: e0 on h0,e1 on h2,e2 on h4,e3 on h6,e4 on h8,e5 on h10,
+vertex_index: v0,v1,v2,v3,
+face_index: f0,f1,f2,f3,
+Halfedge_index: 0,1,2,3,4,5,6,7,8,9,10,11,
+Edge_index: 0,1,2,3,4,5,
+vertex_index: 0,1,2,3,
+face_index: 0,1,2,3,
+```
+
+### 頂点と面の追加
+
+```cpp
+typedef Surface_mesh<Point> Mesh;
+Mesh m;
+Mesh::Vertex_index u = m.add_vertex(Point(0,1,0));
+Mesh::Vertex_index v = m.add_vertex(Point(0,0,0));
+Mesh::Vertex_index w = m.add_vertex(Point(1,0,0));
+m.add_face(u, v, w);
+```
+
+面を追加したときのチェック方法
+
+- メッシュの構造が崩れるような場合は面の追加が失敗する
+- 下記の例は辺を共有する面で表裏が逆になる場合(ハーフエッジの向きが同じ方向だと不可)
+
+```cpp
+/*
+// カーネルはこっち使っても同じ
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel K;
+*/
+#include <CGAL/Simple_cartesian.h>
+typedef CGAL::Simple_cartesian<double> K;
+
+#include <CGAL/Surface_mesh.h>
+typedef CGAL::Surface_mesh<K::Point_3> Mesh;
+typedef Mesh::Vertex_index vertex_descriptor;
+typedef Mesh::Face_index face_descriptor;
+
+int main()
+{
+  Mesh m;
+  // Add the points as vertices
+  vertex_descriptor u = m.add_vertex(K::Point_3(0,1,0));
+  vertex_descriptor v = m.add_vertex(K::Point_3(0,0,0));
+  vertex_descriptor w = m.add_vertex(K::Point_3(1,1,0));
+  vertex_descriptor x = m.add_vertex(K::Point_3(1,0,0));
+  m.add_face(u,v,w);
+  face_descriptor f = m.add_face(u,v,x);
+  if(f == Mesh::null_face())
+  {
+    std::cerr<<"The face could not be added because of an orientation error."<<std::endl;
+    f = m.add_face(u,x,v);
+    assert(f != Mesh::null_face());
+  }
+  return 0;
+}
+```
+
+### Connectivity
+
+ハーフエッジは自身の属する面ひとつと頂点ふたつを持つ。
+
+使える関数は
+
+- Surface_mesh::opposite()
+- Surface_mesh::next()
+- Surface_mesh::prev()
+- Surface_mesh::target()
+- Surface_mesh::face()
+- Surface_mesh::halfedge()
+
+#### indexの取得
+
+頂点、辺、面、ハーフエッジすべて.idx()でindexが直接取得できる
+
+#### 他の種類のdescriptorを取得
+
+ある頂点に属するハーフエッジは複数ある場合がある。
+
+ハーフエッジなら頂点2つ、辺とインデックスを使えば一意のポインタが取得できる。
+
+- [ハーフエッジから頂点](https://doc.cgal.org/latest/Surface_mesh/classCGAL_1_1Surface__mesh.html#a25636a372cb22645aba7175c5b5af3fc)(ハーフエッジの出発点)
+  - Vertex_index source(Halfedge_index h) const
+
+```cpp
+Mesh::Vertex_index v0(0);
+Mesh::Halfedge_index h = mesh.halfedge(v0); //v0に入ってくるハーフエッジの一つを返す
+Mesh::Vertex_index v = mesh.source(h);
+std::cout << "v: " << v.idx() << std::endl; // v: 3
+```
+
+#### 頂点座標の取得
+
+```cpp
+Mesh::Property_map<vertex_descriptor, K::Point_3> location = m.points(); // returns the property for the string "v:point".
+for(vertex_descriptor vd : m.vertices())
+    std::cout << location[vd] << std::endl;
+```
+
+
+
+### 境界線の取得
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Surface_mesh.h>
+#include <iostream>
+#include <fstream>
+#include <vector>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+typedef CGAL::Surface_mesh<Kernel::Point_3>                  Mesh;
+typedef Mesh::Halfedge_index halfedge_descriptor;
+
+int main(int argc, char* argv[])
+{
+    const char* filename = (argc > 1) ? argv[1] : "in.off";
+    std::ifstream input(filename);
+    Mesh mesh;
+    if ( !input || !(input >> mesh) || mesh.is_empty() ) {
+        std::cerr << "Not a valid off file." << std::endl;
+        return 1;
+    }
+
+    // add property_map
+    Mesh::Property_map<halfedge_descriptor,bool> bVisit; // プロパティマップ用の変数定義
+    bool created;
+    boost::tie(bVisit, created) = mesh.add_property_map<halfedge_descriptor,bool>("h:visit",false); // 文字列キーと初期値指定
+    assert(created);
+
+    for(halfedge_descriptor h : halfedges(mesh)){
+        if(bVisit[h])
+            continue;
+        bVisit[h] = true;
+        if(mesh.is_border(h)){
+            std::cout << "Halfedge_index: ";
+            std::cout << h << ',';
+            halfedge_descriptor hn = mesh.next(h);
+            while(h!=hn){
+                std::cout << hn << ',';
+                bVisit[hn] = true;
+                hn = mesh.next(hn);
+            }
+            std::cout << std::endl;
+        }
+    }
+    return 0;
+}
+
+```
+
+
+
+### [Property map](https://doc.cgal.org/latest/Surface_mesh/index.html#title7)
+
+Ref : https://doc.cgal.org/latest/Surface_mesh/classCGAL_1_1Surface__mesh.html#a9d40ac48b19106cd3f59639b036471b1
+
+頂点、辺、ハーフエッジ、面の要素に任意の型を割り当てることが可能。
+
+デフォルト設定で
+
+- 頂点には座標値が"v:point"の文字列をキーとして割り当てられている
+  - points()関数を使うと、キーを指定する方法でなくてもプロパティマップが取得できる
+- 頂点、辺、面にそれぞれ接続情報と削除フラグが文字列キーで割り当てられている
+  - "v:connectivity", "h:connectivity", and "f:connectivity"
+  - "v:removed", "e:removed", and "f:removed"
+
+#### プロパティ一覧取得
+
+```cpp
+std::vector<std::string> props = m.properties<vertex_descriptor>();
+for(std::string p : props){
+    std::cout << p << std::endl;
+}
+```
+
+#### プロパティ追加
+
+```cpp
+Mesh::Property_map<vertex_descriptor,std::string> name; // プロパティマップ用の変数定義
+bool created;
+boost::tie(name, created) = m.add_property_map<vertex_descriptor,std::string>("v:name",""); // 文字列キーと初期値指定
+assert(created);
+```
+
+#### サンプル
+
+```cpp
+#include <string>
+#include <CGAL/Simple_cartesian.h>
+#include <CGAL/Surface_mesh.h>
+typedef CGAL::Simple_cartesian<double> K;
+typedef CGAL::Surface_mesh<K::Point_3> Mesh;
+typedef Mesh::Vertex_index vertex_descriptor;
+typedef Mesh::Face_index face_descriptor;
+int main()
+{
+  Mesh m;
+  vertex_descriptor v0 = m.add_vertex(K::Point_3(0,2,0));
+  vertex_descriptor v1 = m.add_vertex(K::Point_3(2,2,0));
+  vertex_descriptor v2 = m.add_vertex(K::Point_3(0,0,0));
+  vertex_descriptor v3 = m.add_vertex(K::Point_3(2,0,0));
+  vertex_descriptor v4 = m.add_vertex(K::Point_3(1,1,0));
+  m.add_face(v3, v1, v4);
+  m.add_face(v0, v4, v1);
+  m.add_face(v0, v2, v4);
+  m.add_face(v2, v3, v4);
+  // give each vertex a name, the default is empty
+  Mesh::Property_map<vertex_descriptor,std::string> name; // プロパティマップ用の変数定義
+  bool created;
+  boost::tie(name, created) = m.add_property_map<vertex_descriptor,std::string>("v:name",""); // 文字列キーと初期値指定
+  assert(created);
+  // add some names to the vertices
+  name[v0] = "hello";
+  name[v2] = "world";
+  {
+    // You get an existing property, and created will be false 同じプロパティ名での追加は不可
+    Mesh::Property_map<vertex_descriptor,std::string> name;
+    bool created;
+    boost::tie(name, created) = m.add_property_map<vertex_descriptor,std::string>("v:name", "");
+    assert(! created);
+  }
+  //  You can't get a property that does not exist 存在しないプロパティは取得できない
+  Mesh::Property_map<face_descriptor,std::string> gnus;
+  bool found;
+  boost::tie(gnus, found) = m.property_map<face_descriptor,std::string>("v:gnus");
+  assert(! found);
+  // retrieve the point property for which exists a convenience function
+  Mesh::Property_map<vertex_descriptor, K::Point_3> location = m.points(); // returns the property for the string "v:point".
+  for(vertex_descriptor vd : m.vertices()) { 
+    std::cout << name[vd] << " @ " << location[vd] << std::endl;
+  }
+  std::vector<std::string> props = m.properties<vertex_descriptor>();
+  for(std::string p : props){
+    std::cout << p << std::endl;
+  }
+  
+  // delete the string property again
+  m.remove_property_map(name);
+  return 0;
+}
+```
+
+
+
+
+
+## 3D Polyhedral Surface
+
+Reference
+
+- [CGAL 5.0.1 - 3D Polyhedral Surface: User Manual](https://doc.cgal.org/latest/Polyhedron/index.html)
+
+Polyhedral : 頂点、ファセット、エッジ、それらの入射関係で構成。ハーフエッジデータ構造に基づく。2-manifoldに限定。
+
+polyhedron : Polyhedralで境界線がない閉じたもの
+
+
+
+## Polygon Mesh Processing
+
+[CGAL 5.0 - Polygon Mesh Processing: User Manual](https://doc.cgal.org/latest/Polygon_mesh_processing/index.html)
+
+- [この本](https://www.amazon.co.jp/Polygon-Mesh-Processing-Mario-Botsch/dp/1568814267)の内容をベースに作ってある。
+- Polygon Meshは面と辺と頂点で構成される一般的なもの。自己交差含む。2-manifoldに限る。
+- Polyhedron_3やSurface_meshなどのFaceGraphのコンセプトに基づくものなら使える
+- 
+
 # Sample
 
 ## ファイルの入出力
@@ -731,7 +1186,7 @@ https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#RemeshingExample_
 
 不均一な三角形を正三角形になるように分割する。基本的にメッシュは細かくなる
 
-## Hole filling
+## [Hole filling](https://doc.cgal.org/latest/Polygon_mesh_processing/index.html#title23)
 
 ## Predicates
 
@@ -770,6 +1225,54 @@ int main(int argc, char* argv[])
   return 0;
 }
 ```
+
+hole fillingの関数は4種類
+
+- `triangulate_hole_polyline()` : given a sequence of points defining the hole, triangulates the hole.
+  - 頂点のvector入れて、Tripleのvectorが返される
+- `triangulate_hole()` : given a border halfedge on the boundary of the hole on a mesh, triangulates the hole.
+  - 既存の頂点をつないで新しい面を生成する。生成された面の情報返す
+- `triangulate_and_refine_hole()` : in addition to `triangulate_hole()` the generated patch is refined.
+  - 上の処理に加えて、メッシュ分割を行う。生成された面と頂点の情報を返す
+- `triangulate_refine_and_fair_hole()` : in addition to `triangulate_and_refine_hole()` the generated patch is also faired.
+  - 上の処理に加えて、メッシュ形状の最適化を行う。生成された面と頂点と最適化が成功したかの結果を返す
+
+### triangulate_hole_polyline
+
+```cpp
+#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
+#include <CGAL/Polygon_mesh_processing/triangulate_hole.h>
+#include <CGAL/utility.h>
+#include <vector>
+#include <iterator>
+typedef CGAL::Exact_predicates_inexact_constructions_kernel Kernel;
+typedef Kernel::Point_3 Point;
+int main()
+{
+  std::vector<Point> polyline;
+  polyline.push_back(Point( 1.,0.,0.));
+  polyline.push_back(Point( 0.,1.,0.));
+  polyline.push_back(Point(-1.,0.,0.));
+  polyline.push_back(Point( 1.,1.,0.));
+  // repeating first point (i.e. polyline.push_back(Point(1.,0.,0.)) ) is optional (1周してもしなくてもよい)
+  // any type, having Type(int, int, int) constructor available, can be used to hold output triangles
+  typedef CGAL::Triple<int, int, int> Triangle_int;
+  std::vector<Triangle_int> patch;
+  patch.reserve(polyline.size() -2); // there will be exactly n-2 triangles in the patch
+  CGAL::Polygon_mesh_processing::triangulate_hole_polyline(
+          polyline,
+          std::back_inserter(patch));
+  for(std::size_t i = 0; i < patch.size(); ++i)
+  {
+    std::cout << "Triangle " << i << ": "
+      << patch[i].first << " " << patch[i].second << " " << patch[i].third
+      << std::endl;
+  }
+  return 0;
+}
+```
+
+
 
 
 
@@ -1112,6 +1615,8 @@ OpenMeshのデータは割と簡単に連携できるらしい
 
 
 ## Triangulated Surface Mesh Deformation
+
+- Reference : [CGAL 5.0.1 - Triangulated Surface Mesh Deformation: CGAL::Surface_mesh_deformation< TM, VIM, HIM, TAG, WC, ST, CR, VPM > Class Template Reference](https://doc.cgal.org/latest/Surface_mesh_deformation/classCGAL_1_1Surface__mesh__deformation.html)
 
 3種類の手法が実装されている
 

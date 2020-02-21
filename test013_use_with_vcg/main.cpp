@@ -2,7 +2,6 @@
 
 #include<vcg/complex/algorithms/create/platonic.h>
 #include<vcg/complex/allocate.h>
-
 class MyFace;
 class MyVertex;
 struct MyUsedTypes : public vcg::UsedTypes<	vcg::Use<MyVertex>::AsVertexType, vcg::Use<MyFace>::AsFaceType> {};
